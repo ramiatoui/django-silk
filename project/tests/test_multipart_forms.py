@@ -1,10 +1,8 @@
 import json
-from io import BytesIO
-from unittest.mock import Mock, PropertyMock
+from unittest.mock import Mock
 
 from django.http import QueryDict
 from django.test import TestCase
-from django.test.client import RequestFactory
 from django.urls import reverse
 
 from silk.model_factory import RequestModelFactory, multipart_form
