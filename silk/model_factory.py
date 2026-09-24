@@ -137,12 +137,41 @@ class RequestModelFactory:
                 body = raw_body
         return body
 
+    def _parse_multipart_body(self):
+        """Parse multipart/form-data requests to show form fields as JSON
+        and file uploads as metadata (name, size, content type) without file contents."""
+        data = {}
+        try:
+            for key, value in self.request.POST.lists():
+                data[key] = value if len(value) > 1 else value[0]
+        except Exception:
+            pass
+        files = {}
+        try:
+            for key, uploaded_file in self.request.FILES.items():
+                files[key] = {
+                    'name': uploaded_file.name,
+                    'size': uploaded_file.size,
+                    'content_type': uploaded_file.content_type,
+                }
+        except Exception:
+            pass
+        if files:
+            data['_files'] = files
+        return data
+
     def body(self):
         content_type, char_set = self.content_type()
         if content_type == multipart_form:
-            raw_body = b"Raw body not available for multipart_form data, Silk is not showing file uploads."
-            body = ''
-            return body, raw_body
+            parsed = self._parse_multipart_body()
+            if parsed:
+                body = json.dumps(parsed, sort_keys=True, indent=4,
+                                  cls=DefaultEncoder,
+                                  ensure_ascii=SilkyConfig().SILKY_JSON_ENSURE_ASCII)
+            else:
+                body = ''
+            body = self._mask_credentials(body)
+            return body, ''
         try:
             raw_body = self.request.body
         except RequestDataTooBig:
