@@ -6,4 +6,5 @@ app_name = 'example_app'
 urlpatterns = [
     path(route='', view=views.index, name='index'),
     path(route='create', view=views.ExampleCreateView.as_view(), name='create'),
+    path(route='upload', view=views.upload_test, name='upload_test'),
 ]
